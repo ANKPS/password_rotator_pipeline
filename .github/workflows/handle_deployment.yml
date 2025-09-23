@@ -3,6 +3,8 @@ name: Handle Deployment
 on:
   workflow_call:
     secrets:
+      IAM_ROLE:
+        required: true
       AWS_LAMBDA_PERMISSIONS:
         required: true   # OIDC role for GitHub Actions to assume
       DEPLOY_LAMBDA_PERMISSIONS:
@@ -21,6 +23,7 @@ jobs:
   call-deploy-invoke:
     uses: ./.github/workflows/deploy_lambda.yml
     secrets:
+      IAM_ROLE: ${{ secrets.IAM_ROLE }}
       AWS_LAMBDA_PERMISSIONS:  ${{ secrets.AWS_LAMBDA_PERMISSIONS }}
       DEPLOY_LAMBDA_PERMISSIONS: ${{ secrets.DEPLOY_LAMBDA_PERMISSIONS }}
       EVENTBRIDGE_SCHEDULER: ${{ secrets.EVENTBRIDGE_SCHEDULER }}
