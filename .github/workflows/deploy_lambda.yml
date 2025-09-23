@@ -3,6 +3,8 @@ name: Deploy Lambda
 on:
   workflow_call:
     secrets:
+      IAM_ROLE:
+        required: true
       AWS_LAMBDA_PERMISSIONS:
         required: true
       DEPLOY_LAMBDA_PERMISSIONS:
