@@ -22,10 +22,18 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials using GitHub OIDC
+      - name: Configure AWS credentials using GitHub OIDC (staging)
+        if: github.ref == 'refs/heads/Dev'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_LAMBDA_PERMISSIONS }}
+          aws-region: us-east-1
+
+      - name: Configure AWS credentials using GitHub OIDC (main)
+        if: github.ref == 'refs/heads/main'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_LAMBDA_PERMISSIONS_PROD }} # <-- placeholder secret for prod
           aws-region: us-east-1
 
       - name: Set up Terraform
@@ -34,7 +42,8 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan
+      - name: Terraform Plan (staging)
+        if: github.ref == 'refs/heads/Dev'
         run: terraform plan -lock-timeout=5m -out=tfplan
         env:
           TF_VAR_deploy_lambda_permissions: ${{ secrets.DEPLOY_LAMBDA_PERMISSIONS }}
@@ -42,10 +51,29 @@ jobs:
           TF_VAR_lambda_exec_role_v3: ${{ secrets.LAMBDA_EXEC_ROLE_V3 }}
           TF_VAR_lambda_function_arn: ${{ secrets.LAMBDA_FUNCTION_ARN }}
 
-      - name: Terraform Apply
+      - name: Terraform Plan (main)
+        if: github.ref == 'refs/heads/main'
+        run: terraform plan -lock-timeout=5m -out=tfplan
+        env:
+          TF_VAR_deploy_lambda_permissions: ${{ secrets.DEPLOY_LAMBDA_PERMISSIONS_PROD }} # <-- placeholder
+          TF_VAR_eventbridge_scheduler: ${{ secrets.EVENTBRIDGE_SCHEDULER_PROD }}       # <-- placeholder
+          TF_VAR_lambda_exec_role_v3: ${{ secrets.LAMBDA_EXEC_ROLE_V3_PROD }}           # <-- placeholder
+          TF_VAR_lambda_function_arn: ${{ secrets.LAMBDA_FUNCTION_ARN_PROD }}           # <-- placeholder
+
+      - name: Terraform Apply (staging)
+        if: github.ref == 'refs/heads/Dev'
         run: terraform apply -auto-approve tfplan
         env:
           TF_VAR_deploy_lambda_permissions: ${{ secrets.DEPLOY_LAMBDA_PERMISSIONS }}
           TF_VAR_eventbridge_scheduler: ${{ secrets.EVENTBRIDGE_SCHEDULER }}
           TF_VAR_lambda_exec_role_v3: ${{ secrets.LAMBDA_EXEC_ROLE_V3 }}
           TF_VAR_lambda_function_arn: ${{ secrets.LAMBDA_FUNCTION_ARN }}
+
+      - name: Terraform Apply (main)
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        env:
+          TF_VAR_deploy_lambda_permissions: ${{ secrets.DEPLOY_LAMBDA_PERMISSIONS_PROD }} # <-- placeholder
+          TF_VAR_eventbridge_scheduler: ${{ secrets.EVENTBRIDGE_SCHEDULER_PROD }}       # <-- placeholder
+          TF_VAR_lambda_exec_role_v3: ${{ secrets.LAMBDA_EXEC_ROLE_V3_PROD }}           # <-- placeholder
+          TF_VAR_lambda_function_arn: ${{ secrets.LAMBDA_FUNCTION_ARN_PROD }}           # <-- placeholder

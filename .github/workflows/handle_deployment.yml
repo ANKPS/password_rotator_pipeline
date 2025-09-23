@@ -18,11 +18,17 @@ jobs:
   call-pylint:
     uses: ./.github/workflows/lint.yml
 
+jobs:
+  call-pylint:
+    uses: ./.github/workflows/lint.yml
+
   call-deploy-invoke:
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/Dev' }}
     uses: ./.github/workflows/deploy_lambda.yml
     secrets:
-      AWS_LAMBDA_PERMISSIONS:  ${{ secrets.AWS_LAMBDA_PERMISSIONS }}
-      DEPLOY_LAMBDA_PERMISSIONS: ${{ secrets.DEPLOY_LAMBDA_PERMISSIONS }}
-      EVENTBRIDGE_SCHEDULER: ${{ secrets.EVENTBRIDGE_SCHEDULER }}
-      LAMBDA_EXEC_ROLE_V3: ${{ secrets.LAMBDA_EXEC_ROLE_V3 }}
-      LAMBDA_FUNCTION_ARN: ${{ secrets.LAMBDA_FUNCTION_ARN }}
+      AWS_LAMBDA_PERMISSIONS: ${{ github.ref == 'refs/heads/main' && secrets.AWS_LAMBDA_PERMISSIONS_PROD || secrets.AWS_LAMBDA_PERMISSIONS }}
+      DEPLOY_LAMBDA_PERMISSIONS: ${{ github.ref == 'refs/heads/main' && secrets.DEPLOY_LAMBDA_PERMISSIONS_PROD || secrets.DEPLOY_LAMBDA_PERMISSIONS }}
+      EVENTBRIDGE_SCHEDULER: ${{ github.ref == 'refs/heads/main' && secrets.EVENTBRIDGE_SCHEDULER_PROD || secrets.EVENTBRIDGE_SCHEDULER }}
+      LAMBDA_EXEC_ROLE_V3: ${{ github.ref == 'refs/heads/main' && secrets.LAMBDA_EXEC_ROLE_V3_PROD || secrets.LAMBDA_EXEC_ROLE_V3 }}
+      LAMBDA_FUNCTION_ARN: ${{ github.ref == 'refs/heads/main' && secrets.LAMBDA_FUNCTION_ARN_PROD || secrets.LAMBDA_FUNCTION_ARN }}
+
