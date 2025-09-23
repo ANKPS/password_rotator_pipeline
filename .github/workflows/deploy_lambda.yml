@@ -25,7 +25,7 @@ jobs:
       - name: Configure AWS credentials using GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_LAMBDA_PERMISSIONS }}
+          role-to-assume: ${{ secrets.IAM_ROLE }}
           aws-region: us-east-1
 
       - name: Set up Terraform
